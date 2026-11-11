@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Round Robin - Kelompok 1</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Playfair+Display:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<script>try{if(localStorage.getItem('rr-theme')==='dark')document.documentElement.classList.add('dark')}catch(e){}</script>
+<script>
+window.addEventListener('error',function(e){var d=document.createElement('div');d.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:99;background:#A8442F;color:#fff;padding:.6rem 1rem;font:14px monospace';d.textContent='JS error: '+e.message+' ('+(e.filename||'').split('/').pop()+':'+e.lineno+')';document.body.appendChild(d)});
+</script>
+</head>
+<body>
+<header class="sticky top-0 z-40 nav">
+ <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+  <a href="#main" class="font-serif text-xl font-bold">Round Robin Simulator</a>
+  <nav id="menu" class="hidden md:flex absolute md:static top-full left-0 right-0 flex-col md:flex-row gap-1 md:gap-2 p-3 md:p-0 nav items-stretch md:items-center">
+   <a class="lnk" href="#main">Main</a>
+   <button class="lnk" data-open="m-materi">Deskripsi Materi</button>
+   <button class="lnk" data-open="m-guide">Cara Penggunaan</button>
+   <a class="lnk" href="#kuis">Kuis</a>
+   <a class="lnk" href="#tentang">Tentang Kami</a>
+   <button class="lnk" id="theme" aria-label="Ganti tema">◐ Tema</button>
+  </nav>
+  <button id="burger" class="md:hidden lnk" aria-label="Menu" aria-expanded="false">☰</button>
+ </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 pb-16">
+<section id="main" class="py-10">
+ <h1 class="font-serif text-3xl md:text-5xl font-bold leading-tight">Lihat CPU bergiliran, satu quantum demi satu quantum.</h1>
+ <p class="mt-3 max-w-2xl opacity-80">Simulator penjadwalan Round Robin untuk mata kuliah Sistem Operasi. Masukkan proses, tentukan time quantum, lalu telusuri hasilnya langkah demi langkah.</p>
+</section>
+
+<section class="card">
+ <h2 class="h2">Kalkulator Round Robin</h2>
+ <div class="grid sm:grid-cols-3 gap-3 items-end mt-3">
+  <label>Jumlah proses (1–10)<input id="n" type="number" min="1" max="10" value="4" class="inp"></label>
+  <label>Time quantum (≥ 1)<input id="q" type="number" min="1" value="2" class="inp"></label>
+  <button id="make" class="btn">Buat tabel input</button>
+ </div>
+ <div id="inputs" class="mt-4 overflow-x-auto"></div>
+ <p id="err" class="mt-2 text-sm err" role="alert"></p>
+ <div id="actions" class="hidden mt-3 flex flex-wrap gap-2">
+  <button id="calc" type="button" class="btn">Hitung</button>
+  <button id="sample" class="btn alt">Isi contoh</button>
+  <button id="sample2" class="btn alt">Contoh dengan idle</button>
+  <button id="reset" class="btn alt">Reset</button>
+ </div>
+</section>
+
+<div id="result" class="hidden space-y-6 mt-6">
+ <section class="card"><h2 class="h2">Tabel input proses</h2><div id="t-in" class="overflow-x-auto mt-3"></div></section>
+ <section class="card"><h2 class="h2">Gantt chart</h2><div id="gantt" class="overflow-x-auto mt-3 pb-8"></div></section>
+ <section class="card"><h2 class="h2">Simulasi langkah demi langkah</h2>
+  <div class="flex flex-wrap gap-2 mt-3 items-center">
+   <button id="s-reset" class="btn alt">⏮ Awal</button><button id="s-prev" class="btn alt">◀ Prev</button>
+   <button id="s-play" class="btn">▶ Play</button><button id="s-next" class="btn alt">Next ▶</button>
+   <label class="text-sm flex items-center gap-2">Cepat<input id="s-speed" type="range" min="200" max="1500" step="100" value="800"></label>
+  </div>
+  <div id="sim-info" class="mt-3 text-sm"></div>
+  <div id="sim-gantt" class="overflow-x-auto mt-3 pb-8"></div>
+  <ul id="sim-log" class="mt-2 text-sm space-y-1 max-h-48 overflow-auto"></ul>
+ </section>
+ <section class="card"><h2 class="h2">Tabel hasil</h2><div id="t-out" class="overflow-x-auto mt-3"></div>
+  <div id="avg" class="grid sm:grid-cols-3 gap-3 mt-4"></div>
+  <p class="text-sm mt-3 opacity-80">TAT = CT − AT &nbsp;|&nbsp; WT = TAT − BT &nbsp;|&nbsp; RT = ST − AT (ST = pertama kali dijalankan)</p>
+ </section>
+</div>
+
+<section id="kuis" class="card mt-10"><h2 class="h2">Kuis singkat</h2><div id="quiz" class="mt-3"></div></section>
+
+<section id="tentang" class="card mt-6">
+ <h2 class="h2">Tentang kami</h2>
+ <div class="mt-2 space-y-3">
+  <p>RR Lab adalah media pembelajaran interaktif berbasis web yang kami buat untuk membantu memahami algoritma penjadwalan CPU <b>Round Robin</b> pada mata kuliah Sistem Operasi. Setelah mempelajari FCFS, SJF, dan Priority Scheduling, kami ingin menunjukkan bagaimana Round Robin membagi waktu CPU secara adil melalui time quantum.</p>
+  <p>Melalui aplikasi ini, pengguna dapat memasukkan data proses (Arrival Time dan Burst Time), menentukan time quantum, lalu melihat hasilnya dalam bentuk gantt chart, ready queue, dan tabel perhitungan lengkap (ST, CT, TAT, WT, RT, AWT, ATAT). Simulasi langkah demi langkah membuat proses penjadwalan lebih mudah diikuti, bukan hanya hasil akhirnya.</p>
+  <p>Aplikasi ini dibangun sebagai website statis dengan HTML, Tailwind CSS, dan JavaScript, sehingga dapat dijalankan langsung di browser tanpa instalasi.</p>
+  <h3 class="font-bold pt-2">Tim pengembang</h3>
+  <ul class="list-disc pl-5">
+   <li>Muhammad Ridho Reyhan - 4252550013</li>
+   <li>Farel Luther Siagian  - 4253250041</li>
+   <li>Alya Nazwa M          - 4253550023</li>
+   <li>Nikita Anastasya      - 4253550035</li>
+  </ul>
+  <p class="text-sm opacity-80">Mata kuliah: Sistem Operasi · Dosen pengampu: Dr. Zulfahmi Indra, S.Si., M.Cs. · Universitas Negeri Medan</p>
+ </div>
+</section>
+</main>
+
+<footer class="nav text-center text-sm py-6 px-4">
+ <p class="flex items-center justify-center gap-1 flex-wrap">Made with <svg width="16" height="16" viewBox="0 0 24 24" fill="#C0504D" aria-label="cinta" role="img"><path d="M12 21s-7.5-4.6-10-9.3C.4 8.4 2 4.5 5.8 4.5c2.1 0 3.6 1.2 4.2 2.4.6-1.2 2.1-2.4 4.2-2.4 3.8 0 5.4 3.9 3.8 7.2C19.500 16.400 12 21 12 21z"/></svg> by Kelompok 1     · © 2026 Round Robin Simulator</p>
+</footer>
+
+<div id="m-guide" class="modal off" role="dialog" aria-modal="true" aria-label="Cara penggunaan"><div class="box">
+ <h2 class="h2">Cara penggunaan</h2>
+ <ol class="list-decimal pl-5 mt-3 space-y-1">
+  <li>Isi jumlah proses dan time quantum, lalu klik <b>Buat tabel input</b>.</li>
+  <li>Isi Arrival Time (AT) dan Burst Time (BT) tiap proses, atau klik <b>Isi contoh</b>.</li>
+  <li>Klik <b>Hitung</b> untuk melihat tabel, gantt chart, dan hasil.</li>
+  <li>Gunakan simulasi Prev / Next / Play untuk melihat ready queue tiap langkah.</li>
+  <li>Klik <b>Reset</b> untuk mulai dari awal.</li>
+ </ol>
+ <label class="flex items-center gap-2 mt-4"><input type="checkbox" id="hide"> Jangan tampilkan lagi</label>
+ <button class="btn mt-4" data-close>Mengerti</button>
+</div></div>
+
+<div id="m-materi" class="modal off" role="dialog" aria-modal="true" aria-label="Deskripsi materi"><div class="box space-y-3">
+ <h2 class="h2">Round Robin (RR)</h2>
+ <p>Round Robin adalah algoritma penjadwalan CPU yang <b>preemptive</b>: tiap proses mendapat jatah waktu tetap bernama <b>time quantum</b>. Jika belum selesai saat quantum habis, proses di-preempt dan masuk ke belakang ready queue. Berbeda dengan FCFS yang menjalankan proses sampai selesai, atau SJF dan Priority yang memilih proses berdasar BT atau prioritas, RR memilih berdasar giliran (FIFO) sehingga adil untuk semua proses.</p>
+ <h3 class="font-bold">Langkah algoritma</h3>
+ <ol class="list-decimal pl-5"><li>Masukkan proses yang sudah tiba ke ready queue (urut AT).</li><li>Ambil proses terdepan, jalankan selama min(quantum, sisa BT).</li><li>Proses yang tiba selama eksekusi masuk queue lebih dulu.</li><li>Jika sisa BT &gt; 0, proses yang di-preempt masuk di belakang queue; jika 0, catat CT.</li><li>Jika queue kosong tetapi masih ada proses yang belum tiba, CPU idle.</li></ol>
+ <h3 class="font-bold">Rumus perhitungan</h3>
+ <div class="space-y-2">
+  <div class="fx">ST<sub>i</sub> = max(AT<sub>i</sub>, CT<sub>i−1</sub>)</div>
+  <div class="fx">CT<sub>i</sub> = ST<sub>i</sub> + BT<sub>i</sub></div>
+  <div class="fx">TAT<sub>i</sub> = CT<sub>i</sub> − AT<sub>i</sub></div>
+  <div class="fx">WT<sub>i</sub> = TAT<sub>i</sub> − BT<sub>i</sub></div>
+  <div class="fx">RT<sub>i</sub> = ST<sub>i</sub> − AT<sub>i</sub></div>
+ </div>
+ <p class="text-sm"><b>Keterangan:</b> AT = Arrival Time, BT = Burst Time, ST = Start Time, CT = Completion Time, TAT = Turn Around Time, WT = Waiting Time, RT = Response Time. CT<sub>i−1</sub> adalah waktu CPU terakhir bebas sebelum proses i. Pada Round Robin, ST adalah saat proses <i>pertama kali</i> mendapat CPU, sedangkan CT adalah saat proses selesai seluruhnya (setelah beberapa giliran). AWT = rata-rata WT, ATAT = rata-rata TAT.</p>
+ <h3 class="font-bold">Pengaruh quantum</h3>
+ <p>Quantum terlalu kecil menyebabkan banyak context switch (overhead besar). Quantum terlalu besar membuat RR mirip FCFS.</p>
+ <p><b>Kelebihan:</b> adil, tidak ada starvation, RT baik. <b>Kekurangan:</b> TAT rata-rata bisa lebih besar daripada SJF, sensitif terhadap nilai quantum.</p>
+ <button class="btn" data-close>Tutup</button>
+</div></div>
+
+<script src="assets/js/scheduler.js"></script>
+<script src="assets/js/ui.js"></script>
+<script src="assets/js/main.js"></script>
+</body></html>
